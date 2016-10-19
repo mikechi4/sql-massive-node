@@ -2,7 +2,8 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var massive = require('massive');
 var port = 3000;
-var app = express();
+
+var app = module.exports = express();
 
 var massiveServer = massive.connectSync({
   connectionString: "postgres://postgres:january17@localhost/massive-afternoon-proj"
@@ -11,20 +12,13 @@ var massiveServer = massive.connectSync({
 app.use(bodyParser.json());
 app.set('db',massiveServer);
 var db = app.get('db')
+var controller = require('./controller.js')
 
-app.post('/api/product', function(req, res, next) {
-  var newProduct = {
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-    image_url: req.body.image_url
-  }
-
-  db.create_product([newProduct.name, newProduct.description, newProduct.price, newProduct.image_url],function(err, products) {
-    console.log(products)
-    res.status(200).json(products);
-  });
-});
+app.post('/api/product', controller.create);
+app.get('/api/products', controller.get);
+app.get('/api/product/:id', controller.getOneProduct);
+app.put('/api/product/:id', controller.put);
+app.delete('/api/product/:productId', controller.delete);
 
 
 app.listen(port, function(){
